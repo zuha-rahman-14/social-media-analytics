@@ -7,7 +7,7 @@ Flask==3.0.3
 Flask-MySQLdb==2.0.0
 
 # Image Processing & ML (CNN)
-Pillow==10.3.0
+Pillow==9.5.0
 numpy==1.26.4
 opencv-python-headless==4.9.0.80
 tensorflow==2.16.1          # or tensorflow-cpu for CPU-only
