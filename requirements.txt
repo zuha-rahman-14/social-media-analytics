@@ -5,6 +5,9 @@
 # Web Framework
 Flask==3.0.3
 Flask-MySQLdb==2.0.0
+flask_sqlalchemy
+flask_login
+pymysql
 
 # Image Processing & ML (CNN)
 Pillow==9.5.0
