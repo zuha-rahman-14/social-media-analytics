@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% block title %}Analysis Result — SocialGuard{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('analyze') }}" class="btn btn-sm btn-outline-secondary rounded-pill">
+      <i class="bi bi-arrow-left me-1"></i>New Analysis</a>
+    <div>
+      <h2 class="page-title mb-0">Analysis Complete</h2>
+      <p class="page-subtitle mb-0">Post #{{ post.id }} — {{ post.platform }}</p>
+    </div>
+    {% if post.is_flagged %}
+      <span class="ms-auto flag-badge"><i class="bi bi-flag-fill me-2"></i>FLAGGED</span>
+    {% else %}
+      <span class="ms-auto clean-badge"><i class="bi bi-check-circle me-2"></i>CLEAN</span>
+    {% endif %}
+  </div>
+
+  <div class="row g-4">
+    <!-- Left: Detection Results -->
+    <div class="col-lg-7">
+      <!-- Image Analysis -->
+      <div class="section-card mb-4">
+        <h5 class="section-title mb-4"><i class="bi bi-image me-2"></i>Image Detection</h5>
+        {% if post.image_path %}
+          <div class="result-image-wrap mb-4">
+            <img src="{{ url_for('static', filename=post.image_path) }}" class="result-image rounded-3" alt="Analyzed image">
+          </div>
+          <div class="detection-result-card {% if post.image_tamper_score > 0.65 %}result-danger{% elif post.image_tamper_score > 0.35 %}result-warning{% else %}result-success{% endif %}">
+            <div class="result-metric-row">
+              <div>
+                <div class="result-label">Tamper Confidence</div>
+                <div class="result-score">{{ "%.1f"|format(post.image_tamper_score * 100) }}%</div>
+              </div>
+              <div class="text-end">
+                <div class="result-label">Verdict</div>
+                <div class="result-verdict">{{ post.image_tamper_label }}</div>
+              </div>
+            </div>
+            <div class="score-bar-wrap mt-3">
+              <div class="score-bar">
+                <div class="score-fill" style="width: {{ "%.1f"|format(post.image_tamper_score * 100) }}%;
+                  background: {% if post.image_tamper_score > 0.65 %}#ef4444{% elif post.image_tamper_score > 0.35 %}#f59e0b{% else %}#10b981{% endif %}">
+                </div>
+              </div>
+              <div class="score-markers">
+                <span>0%</span><span style="margin-left:35%">35%</span><span style="margin-left:25%">65%</span><span>100%</span>
+              </div>
+            </div>
+          </div>
+          <div class="tech-note mt-3">
+            <i class="bi bi-info-circle me-2"></i>
+            Analyzed via: Error Level Analysis (ELA) · Noise pattern comparison · EXIF metadata · CNN model
+          </div>
+        {% else %}
+          <div class="empty-state-sm"><i class="bi bi-image text-muted"></i><span>No image uploaded</span></div>
+        {% endif %}
+      </div>
+
+      <!-- Text Analysis -->
+      <div class="section-card">
+        <h5 class="section-title mb-4"><i class="bi bi-type me-2"></i>Text Detection</h5>
+        {% if post.caption %}
+          <div class="caption-display mb-3">{{ post.caption }}</div>
+          <div class="detection-result-card {% if post.text_manipulation_score > 0.65 %}result-danger{% elif post.text_manipulation_score > 0.35 %}result-warning{% else %}result-success{% endif %}">
+            <div class="result-metric-row">
+              <div>
+                <div class="result-label">Manipulation Confidence</div>
+                <div class="result-score">{{ "%.1f"|format(post.text_manipulation_score * 100) }}%</div>
+              </div>
+              <div class="text-end">
+                <div class="result-label">Verdict</div>
+                <div class="result-verdict">{{ post.text_manipulation_label }}</div>
+              </div>
+            </div>
+            <div class="score-bar-wrap mt-3">
+              <div class="score-bar">
+                <div class="score-fill" style="width: {{ "%.1f"|format(post.text_manipulation_score * 100) }}%;
+                  background: {% if post.text_manipulation_score > 0.65 %}#ef4444{% elif post.text_manipulation_score > 0.35 %}#f59e0b{% else %}#10b981{% endif %}">
+                </div>
+              </div>
+            </div>
+          </div>
+          {% if txt_details %}
+          <div class="findings-list mt-3">
+            <div class="findings-title">Detected Issues</div>
+            {% for detail in txt_details %}
+            <div class="finding-item finding-{{ detail.severity }}">
+              <div class="finding-header">
+                <span class="finding-severity {{ detail.severity }}">{{ detail.severity|upper }}</span>
+                <span class="finding-rule">{{ detail.rule }}</span>
+              </div>
+              {% if detail.excerpt %}
+                <div class="finding-excerpt">{{ detail.excerpt }}</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% else %}
+          <div class="empty-state-sm"><i class="bi bi-chat-text text-muted"></i><span>No caption provided</span></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right: Engagement + Summary -->
+    <div class="col-lg-5">
+      <div class="section-card mb-4">
+        <h5 class="section-title mb-4"><i class="bi bi-bar-chart me-2"></i>Engagement Score</h5>
+        <div class="engagement-display">
+          <div class="eng-score-big">{{ post.engagement_score }}</div>
+          <div class="eng-score-label">Total Score</div>
+        </div>
+        <div class="eng-breakdown mt-3">
+          <div class="eng-row">
+            <span><i class="bi bi-heart-fill text-danger me-2"></i>Likes</span>
+            <span class="eng-val">{{ post.likes }} × 1.0 = {{ post.likes }}</span>
+          </div>
+          <div class="eng-row">
+            <span><i class="bi bi-chat-fill text-primary-custom me-2"></i>Comments</span>
+            <span class="eng-val">{{ post.comments_count }} × 2.0 = {{ post.comments_count * 2 }}</span>
+          </div>
+          <div class="eng-row">
+            <span><i class="bi bi-share-fill text-success me-2"></i>Shares</span>
+            <span class="eng-val">{{ post.shares }} × 3.0 = {{ post.shares * 3 }}</span>
+          </div>
+        </div>
+        <div class="formula-note mt-3">Formula: Likes×1 + Comments×2 + Shares×3</div>
+      </div>
+
+      {% if post.is_flagged %}
+      <div class="flag-alert-card mb-4">
+        <div class="flag-alert-header"><i class="bi bi-exclamation-triangle-fill me-2"></i>Content Flagged</div>
+        <div class="flag-alert-body">{{ post.flag_reason }}</div>
+        <div class="flag-alert-note">This post has been marked for review. Threshold: 65% confidence.</div>
+      </div>
+      {% endif %}
+
+      <div class="section-card">
+        <h5 class="section-title mb-3"><i class="bi bi-clipboard-data me-2"></i>Summary</h5>
+        <div class="summary-row"><span>Platform</span><span class="platform-badge">{{ post.platform }}</span></div>
+        <div class="summary-row"><span>Analyzed</span><span>{{ post.created_at.strftime('%b %d, %Y %H:%M') }}</span></div>
+        <div class="summary-row">
+          <span>Image Status</span>
+          <span class="status-pill status-{{ 'danger' if post.image_tamper_score > 0.65 else ('warning' if post.image_tamper_score > 0.35 else 'success') }}">
+            {{ post.image_tamper_label }}
+          </span>
+        </div>
+        <div class="summary-row">
+          <span>Text Status</span>
+          <span class="status-pill status-{{ 'danger' if post.text_manipulation_score > 0.65 else ('warning' if post.text_manipulation_score > 0.35 else 'success') }}">
+            {{ post.text_manipulation_label }}
+          </span>
+        </div>
+        <div class="summary-row">
+          <span>Overall Flag</span>
+          <span class="{% if post.is_flagged %}text-danger fw-semibold{% else %}text-success fw-semibold{% endif %}">
+            {% if post.is_flagged %}<i class="bi bi-flag-fill me-1"></i>Flagged{% else %}<i class="bi bi-check-circle me-1"></i>Clean{% endif %}
+          </span>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+          <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary flex-fill rounded-pill">Dashboard</a>
+          <a href="{{ url_for('posts') }}" class="btn btn-primary-custom flex-fill rounded-pill">All Posts</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

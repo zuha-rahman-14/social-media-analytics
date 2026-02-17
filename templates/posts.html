@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}All Posts — SocialGuard{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="page-title">Posts</h2>
+      <p class="page-subtitle">All analyzed content</p>
+    </div>
+    <a href="{{ url_for('analyze') }}" class="btn btn-primary-custom"><i class="bi bi-plus-lg me-2"></i>Analyze Post</a>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs mb-4">
+    <a href="{{ url_for('posts', flagged='all') }}" class="filter-tab {% if filter_flag == 'all' %}active{% endif %}">All Posts</a>
+    <a href="{{ url_for('posts', flagged='flagged') }}" class="filter-tab {% if filter_flag == 'flagged' %}active{% endif %}">
+      <i class="bi bi-flag me-1"></i>Flagged
+    </a>
+    <a href="{{ url_for('posts', flagged='clean') }}" class="filter-tab {% if filter_flag == 'clean' %}active{% endif %}">
+      <i class="bi bi-check-circle me-1"></i>Clean
+    </a>
+  </div>
+
+  {% if posts.items %}
+  <div class="row g-3">
+    {% for post in posts.items %}
+    <div class="col-md-6 col-xl-4">
+      <div class="post-card {% if post.is_flagged %}post-card-flagged{% endif %}">
+        {% if post.image_path %}
+          <div class="post-card-img-wrap">
+            <img src="{{ url_for('static', filename=post.image_path) }}" class="post-card-img" alt="Post">
+            {% if post.is_flagged %}
+              <div class="post-card-flag-badge"><i class="bi bi-flag-fill"></i></div>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="post-card-no-img {% if post.is_flagged %}flagged{% endif %}">
+            {% if post.is_flagged %}<i class="bi bi-flag-fill text-danger"></i>{% else %}<i class="bi bi-card-text"></i>{% endif %}
+          </div>
+        {% endif %}
+        <div class="post-card-body">
+          <p class="post-card-caption">{{ post.caption[:80] + '…' if post.caption and post.caption|length > 80 else (post.caption or 'No caption') }}</p>
+          <div class="post-card-metrics">
+            <span><i class="bi bi-heart-fill text-danger me-1"></i>{{ post.likes }}</span>
+            <span><i class="bi bi-chat-fill text-primary-custom me-1"></i>{{ post.comments_count }}</span>
+            <span><i class="bi bi-share-fill text-success me-1"></i>{{ post.shares }}</span>
+            <span class="ms-auto fw-semibold">Score: {{ post.engagement_score }}</span>
+          </div>
+          <div class="post-card-status mt-2">
+            <span class="status-pill status-{{ 'danger' if post.image_tamper_score > 0.65 else ('warning' if post.image_tamper_score > 0.35 else 'success') }} me-1">
+              <i class="bi bi-image me-1"></i>{{ post.image_tamper_label }}
+            </span>
+            <span class="status-pill status-{{ 'danger' if post.text_manipulation_score > 0.65 else ('warning' if post.text_manipulation_score > 0.35 else 'success') }}">
+              <i class="bi bi-type me-1"></i>{{ post.text_manipulation_label }}
+            </span>
+          </div>
+          <div class="post-card-footer mt-3">
+            <span class="text-muted-custom small">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+            <form method="POST" action="{{ url_for('delete_post', pid=post.id) }}" class="d-inline"
+                  onsubmit="return confirm('Delete this post?')">
+              <button type="submit" class="btn btn-xs btn-outline-danger rounded-pill ms-2">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if posts.pages > 1 %}
+  <div class="d-flex justify-content-center mt-4 gap-2">
+    {% if posts.has_prev %}
+      <a href="{{ url_for('posts', page=posts.prev_num, flagged=filter_flag) }}" class="btn btn-sm btn-outline-secondary rounded-pill">← Prev</a>
+    {% endif %}
+    <span class="btn btn-sm btn-secondary rounded-pill disabled">{{ posts.page }} / {{ posts.pages }}</span>
+    {% if posts.has_next %}
+      <a href="{{ url_for('posts', page=posts.next_num, flagged=filter_flag) }}" class="btn btn-sm btn-outline-secondary rounded-pill">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-inbox"></i>
+    <p>No posts found. <a href="{{ url_for('analyze') }}">Analyze your first post →</a></p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

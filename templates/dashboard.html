@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — SocialGuard{% endblock %}
+{% block content %}
+<div class="page-container">
+
+  <!-- Page Header -->
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="page-title">Analytics Dashboard</h2>
+      <p class="page-subtitle">Content performance & integrity overview</p>
+    </div>
+    <a href="{{ url_for('analyze') }}" class="btn btn-primary-custom">
+      <i class="bi bi-plus-lg me-2"></i>Analyze Post
+    </a>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-primary-soft"><i class="bi bi-file-post text-primary-custom"></i></div>
+        <div class="stat-value">{{ total }}</div>
+        <div class="stat-label">Total Posts</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-warning-soft"><i class="bi bi-flag text-warning"></i></div>
+        <div class="stat-value text-warning">{{ flagged }}</div>
+        <div class="stat-label">Flagged Content</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-success-soft"><i class="bi bi-graph-up text-success"></i></div>
+        <div class="stat-value text-success">{{ avg_engagement }}</div>
+        <div class="stat-label">Avg Engagement</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-danger-soft"><i class="bi bi-shield-x text-danger"></i></div>
+        <div class="stat-value text-danger">
+          {% if total > 0 %}{{ "%.0f"|format(flagged / total * 100) }}%{% else %}0%{% endif %}
+        </div>
+        <div class="stat-label">Flag Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h5 class="chart-title"><i class="bi bi-activity me-2"></i>Engagement Trend</h5>
+          <span class="chart-badge">Last 7 Posts</span>
+        </div>
+        <div class="chart-body">
+          <canvas id="engagementChart" height="100"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="chart-card h-100">
+        <div class="chart-header">
+          <h5 class="chart-title"><i class="bi bi-image me-2"></i>Tamper Risk</h5>
+          <span class="chart-badge">Images</span>
+        </div>
+        <div class="chart-body">
+          <canvas id="tamperChart" height="160"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Posts -->
+  <div class="section-card">
+    <div class="section-header d-flex justify-content-between align-items-center">
+      <h5 class="section-title"><i class="bi bi-clock-history me-2"></i>Recent Posts</h5>
+      <a href="{{ url_for('posts') }}" class="btn btn-sm btn-outline-secondary rounded-pill">View All</a>
+    </div>
+    {% if posts %}
+    <div class="table-responsive">
+      <table class="table table-custom">
+        <thead>
+          <tr>
+            <th>Post</th>
+            <th>Platform</th>
+            <th>Engagement</th>
+            <th>Image Status</th>
+            <th>Text Status</th>
+            <th>Flag</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for post in posts %}
+          <tr class="{% if post.is_flagged %}row-flagged{% endif %}">
+            <td>
+              <div class="post-preview">
+                {% if post.image_path %}
+                  <img src="{{ url_for('static', filename=post.image_path) }}" class="post-thumb" alt="Post image">
+                {% else %}
+                  <div class="post-thumb-placeholder"><i class="bi bi-card-text"></i></div>
+                {% endif %}
+                <span class="post-caption">{{ post.caption[:40] + '…' if post.caption and post.caption|length > 40 else (post.caption or 'No caption') }}</span>
+              </div>
+            </td>
+            <td><span class="platform-badge">{{ post.platform }}</span></td>
+            <td><span class="eng-score">{{ post.engagement_score }}</span></td>
+            <td>
+              <span class="status-pill status-{{ 'danger' if post.image_tamper_score > 0.65 else ('warning' if post.image_tamper_score > 0.35 else 'success') }}">
+                {{ post.image_tamper_label }}
+              </span>
+            </td>
+            <td>
+              <span class="status-pill status-{{ 'danger' if post.text_manipulation_score > 0.65 else ('warning' if post.text_manipulation_score > 0.35 else 'success') }}">
+                {{ post.text_manipulation_label }}
+              </span>
+            </td>
+            <td>
+              {% if post.is_flagged %}
+                <i class="bi bi-flag-fill text-danger" title="{{ post.flag_reason }}"></i>
+              {% else %}
+                <i class="bi bi-check-circle text-success"></i>
+              {% endif %}
+            </td>
+            <td class="text-muted-custom small">{{ post.created_at.strftime('%b %d') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-inbox"></i>
+      <p>No posts yet. <a href="{{ url_for('analyze') }}">Analyze your first post →</a></p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const labels = {{ chart_labels | safe }};
+const engData = {{ chart_engagement | safe }};
+const tamperData = {{ chart_tamper | safe }};
+
+// Engagement Chart
+new Chart(document.getElementById('engagementChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Engagement Score',
+      data: engData,
+      borderColor: '#6366f1',
+      backgroundColor: 'rgba(99,102,241,0.12)',
+      borderWidth: 2.5,
+      pointBackgroundColor: '#6366f1',
+      pointRadius: 5,
+      tension: 0.4,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8b8fa8' } },
+      x: { grid: { display: false }, ticks: { color: '#8b8fa8' } }
+    }
+  }
+});
+
+// Tamper Risk Chart
+new Chart(document.getElementById('tamperChart'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Tamper Risk %',
+      data: tamperData,
+      backgroundColor: tamperData.map(v => v > 65 ? 'rgba(239,68,68,0.7)' : v > 35 ? 'rgba(245,158,11,0.7)' : 'rgba(16,185,129,0.7)'),
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8b8fa8', callback: v => v + '%' } },
+      x: { grid: { display: false }, ticks: { color: '#8b8fa8' } }
+    }
+  }
+});
+</script>
+{% endblock %}
