@@ -19,8 +19,6 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 db = SQLAlchemy(app)
-with app.app_context():
-    db.create_all()
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -219,8 +217,9 @@ def quick_text_check():
     score, label, details = text_detector.detect(text)
     return jsonify({'score': score, 'label': label, 'details': details})
 
+# Create tables on startup (for Render)
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True, host='0.0.0.0', port=5000)
