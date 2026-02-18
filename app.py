@@ -12,10 +12,11 @@ from ml_modules.text_detector import TextManipulationDetector
 app = Flask(__name__)
 # MySQL Connection
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="Root",
-    database="social_media"
+    host=os.environ.get("DB_HOST"),
+    user=os.environ.get("DB_USER"),
+    password=os.environ.get("DB_PASSWORD"),
+    database=os.environ.get("DB_NAME"),
+    port=int(os.environ.get("DB_PORT"))
 )
 
 cursor = db.cursor(dictionary=True)
