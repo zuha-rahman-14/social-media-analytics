@@ -4,32 +4,14 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os, json
-import mysql.connector
 from datetime import datetime
 from ml_modules.image_detector import ImageTamperDetector
 from ml_modules.text_detector import TextManipulationDetector
 
 app = Flask(__name__)
-# MySQL Connection
-import urllib.parse as urlparse
-
-database_url = os.environ.get("DATABASE_URL")
-url = urlparse.urlparse(database_url)
-
-db = mysql.connector.connect(
-    host=url.hostname,
-    user=url.username,
-    password=url.password,
-    database=url.path[1:],  # removes leading '/'
-    port=url.port or 3306
-)
-
-cursor = db.cursor(dictionary=True)
-
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-in-prod')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL', 'mysql+pymysql://root:Root@localhost/social_media'
-)
+    'DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024

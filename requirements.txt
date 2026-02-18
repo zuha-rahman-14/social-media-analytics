@@ -4,10 +4,9 @@
 
 # Web Framework
 Flask==3.0.3
-Flask-MySQLdb==2.0.0
 flask_sqlalchemy
 flask_login
-pymysql
+psycopg2-binary
 
 # Image Processing & ML (CNN)
 Pillow==9.5.0
@@ -25,4 +24,3 @@ Werkzeug==3.0.3
 python-dotenv==1.0.1
 
 gunicorn
-mysql-connector-python==8.3.0
