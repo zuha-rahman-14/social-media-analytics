@@ -21,7 +21,7 @@ db = mysql.connector.connect(
     user=url.username,
     password=url.password,
     database=url.path[1:],  # removes leading '/'
-    port=url.port
+    port=url.port or 3306
 )
 
 cursor = db.cursor(dictionary=True)
