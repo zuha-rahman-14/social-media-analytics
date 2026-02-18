@@ -130,7 +130,7 @@ class ImageTamperDetector:
             return 0.1
         except Exception:
             return 0.3
-
+        
     def _cnn_predict(self, img):
         """
         CNN forward pass.

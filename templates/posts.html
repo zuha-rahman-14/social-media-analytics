@@ -9,7 +9,7 @@
     </div>
     <a href="{{ url_for('analyze') }}" class="btn btn-primary-custom"><i class="bi bi-plus-lg me-2"></i>Analyze Post</a>
   </div>
-
+  
   <!-- Filter Tabs -->
   <div class="filter-tabs mb-4">
     <a href="{{ url_for('posts', flagged='all') }}" class="filter-tab {% if filter_flag == 'all' %}active{% endif %}">All Posts</a>
