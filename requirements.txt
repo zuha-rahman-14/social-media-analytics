@@ -11,13 +11,6 @@ psycopg2-binary
 # Image Processing & ML (CNN)
 Pillow==9.5.0
 numpy==1.26.4
-opencv-python-headless==4.9.0.80
-tensorflow==2.16.1          # or tensorflow-cpu for CPU-only
-
-# NLP (BERT / transformers)
-transformers==4.40.0
-torch==2.3.0                # CPU version — use torch+cu121 for GPU
-sentencepiece==0.2.0
 
 # Utilities
 Werkzeug==3.0.3
