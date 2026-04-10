@@ -15,6 +15,7 @@ Install: pip install transformers torch
 Replace 'distilbert-base-uncased-finetuned-sst-2-english' with your fine-tuned model.
 """
 import re
+import os
 import logging
 import numpy as np
 from typing import Tuple, List, Dict, Optional
@@ -54,7 +55,11 @@ class TextManipulationDetector:
     def __init__(self, model_name=None):
         self.bert_pipeline = None
         self.model_name = model_name or 'distilbert-base-uncased-finetuned-sst-2-english'
-        self._load_bert()
+        USE_BERT = os.getenv("USE_BERT", "false")
+        if USE_BERT == "true":
+            self._load_bert()
+        else:
+            logger.info("BERT disabled — using lightweight mode")
 
     def _load_bert(self):
         try:

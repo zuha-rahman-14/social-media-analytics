@@ -18,12 +18,27 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-image_detector = ImageTamperDetector()
-text_detector = TextManipulationDetector()
+image_detector = None
+text_detector = None
+
+def get_image_detector():
+    global image_detector
+    if image_detector is None:
+        image_detector = ImageTamperDetector()
+    return image_detector
+
+def get_text_detector():
+    global text_detector
+    if text_detector is None:
+        text_detector = TextManipulationDetector()
+    return text_detector
 
 
 # ── Models ────────────────────────────────────────────────────────────
@@ -143,11 +158,11 @@ def analyze():
 
         img_score, img_label = (0.0, 'No Image')
         if image_path:
-            img_score, img_label = image_detector.detect(os.path.join('static', image_path))
+            img_score, img_label = get_image_detector().detect(os.path.join('static', image_path))
 
         txt_score, txt_label, txt_details = (0.0, 'No Caption', [])
         if caption:
-            txt_score, txt_label, txt_details = text_detector.detect(caption)
+            txt_score, txt_label, txt_details = get_text_detector().detect(caption)
 
         post = Post(
             user_id=current_user.id, caption=caption, image_path=image_path,
@@ -214,7 +229,7 @@ def quick_text_check():
     text = data.get('text', '').strip()
     if not text:
         return jsonify({'error': 'No text provided'}), 400
-    score, label, details = text_detector.detect(text)
+    score, label, details = get_text_detector().detect(text)
     return jsonify({'score': score, 'label': label, 'details': details})
 
 # Create tables on startup (for Render)
