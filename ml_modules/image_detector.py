@@ -51,7 +51,13 @@ class ImageTamperDetector:
         Returns: (confidence_score: float 0-1, label: str)
         Labels: 'Authentic', 'Suspicious', 'Likely Tampered'
         """
-        # 🔥 DEMO MODE (safe fix)
+        if not os.path.exists(image_path):
+            return 0.0, "Error: File Not Found"
+        try:
+            img = Image.open(image_path).convert('RGB')
+        except Exception:
+            return 0.0, "Error: Cannot Open"
+        
         if os.getenv("DEMO_MODE", "false") == "true":
             ela_score = self._ela_analysis(img)
             noise_score = self._noise_analysis(img)
@@ -61,13 +67,7 @@ class ImageTamperDetector:
             final = float(np.clip(final, 0.0, 1.0))
 
             return round(final, 4), self._to_label(final)
-        if not os.path.exists(image_path):
-            return 0.0, "Error: File Not Found"
-        try:
-            img = Image.open(image_path).convert('RGB')
-        except Exception:
-            return 0.0, "Error: Cannot Open"
-
+            
         ela_score = self._ela_analysis(img)
         noise_score = self._noise_analysis(img)
         meta_score = self._metadata_analysis(image_path)
