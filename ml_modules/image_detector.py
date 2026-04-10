@@ -51,6 +51,9 @@ class ImageTamperDetector:
         Returns: (confidence_score: float 0-1, label: str)
         Labels: 'Authentic', 'Suspicious', 'Likely Tampered'
         """
+        # 🔥 DEMO MODE (safe fix)
+        if os.getenv("DEMO_MODE", "false") == "true":
+            return 0.2, "No Tampering (Demo Mode)"
         if not os.path.exists(image_path):
             return 0.0, "Error: File Not Found"
         try:
