@@ -53,7 +53,14 @@ class ImageTamperDetector:
         """
         # 🔥 DEMO MODE (safe fix)
         if os.getenv("DEMO_MODE", "false") == "true":
-            return 0.2, "No Tampering (Demo Mode)"
+            ela_score = self._ela_analysis(img)
+            noise_score = self._noise_analysis(img)
+            meta_score = self._metadata_analysis(image_path)
+
+            final = 0.5 * ela_score + 0.3 * noise_score + 0.2 * meta_score
+            final = float(np.clip(final, 0.0, 1.0))
+
+            return round(final, 4), self._to_label(final)
         if not os.path.exists(image_path):
             return 0.0, "Error: File Not Found"
         try:

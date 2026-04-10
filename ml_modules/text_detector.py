@@ -85,7 +85,14 @@ class TextManipulationDetector:
         """
         # 🔥 DEMO MODE (safe fix)
         if os.getenv("DEMO_MODE", "false") == "true":
-            return 0.4, "Likely Clean", ["Demo mode"]
+            rule_score, rule_details = self._rule_checks(text)
+            ling_score, ling_details = self._linguistic_analysis(text)
+
+            final = 0.6 * rule_score + 0.4 * ling_score
+            details = rule_details + ling_details
+
+            final = float(np.clip(final, 0.0, 1.0))
+            return round(final, 4), self._to_label(final), details
         if not text or not text.strip():
             return 0.0, 'No Text', []
 
