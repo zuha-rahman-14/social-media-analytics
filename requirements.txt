@@ -2,18 +2,15 @@
 # SocialGuard — Python Requirements
 # Install with: pip install -r requirements.txt
 
-# Web Framework
 Flask==3.0.3
-flask_sqlalchemy
-flask_login
-psycopg2-binary
+flask_sqlalchemy==3.1.1
+flask_login==0.6.3
+psycopg2-binary==2.9.9
 
-# Image Processing & ML (CNN)
-Pillow==9.5.0
+Pillow==10.3.0
 numpy==1.26.4
 
-# Utilities
 Werkzeug==3.0.3
 python-dotenv==1.0.1
 
-gunicorn
+gunicorn==21.2.0
