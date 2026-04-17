@@ -83,7 +83,6 @@ class TextManipulationDetector:
             label   : str          ('Authentic', 'Suspicious', 'Likely Manipulated')
             details : List[Dict]   each: {'rule': str, 'severity': str, 'excerpt': str}
         """
-        # 🔥 DEMO MODE (safe fix)
         if os.getenv("DEMO_MODE", "false") == "true":
             rule_score, rule_details = self._rule_checks(text)
             ling_score, ling_details = self._linguistic_analysis(text)
@@ -258,8 +257,8 @@ class TextManipulationDetector:
 
     @staticmethod
     def _to_label(score):
-        if score < 0.35:
+        if score < 0.20:
             return 'Authentic'
         elif score < 0.65:
             return 'Suspicious'
-        return 'Likely Manipulated'
+        return 'likely Manipulated'

@@ -180,7 +180,7 @@ class ImageTamperDetector:
 
     @staticmethod
     def _to_label(score):
-        if score < 0.35:
+        if score < 0.20:
             return 'Authentic'
         elif score < 0.65:
             return 'Suspicious'
