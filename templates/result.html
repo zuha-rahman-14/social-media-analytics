@@ -26,7 +26,7 @@
           <div class="result-image-wrap mb-4">
             <img src="{{ url_for('static', filename=post.image_path) }}" class="result-image rounded-3" alt="Analyzed image">
           </div>
-          <div class="detection-result-card {% if post.image_tamper_score > 0.65 %}result-danger{% elif post.image_tamper_score > 0.35 %}result-warning{% else %}result-success{% endif %}">
+          <div class="detection-result-card {% if post.image_tamper_score > 0.65 %}result-danger{% elif post.image_tamper_score > 0.20 %}result-warning{% else %}result-success{% endif %}">
             <div class="result-metric-row">
               <div>
                 <div class="result-label">Tamper Confidence</div>
@@ -40,7 +40,7 @@
             <div class="score-bar-wrap mt-3">
               <div class="score-bar">
                 <div class="score-fill" style="width: {{ "%.1f"|format(post.image_tamper_score * 100) }}%;
-                  background: {% if post.image_tamper_score > 0.65 %}#ef4444{% elif post.image_tamper_score > 0.35 %}#f59e0b{% else %}#10b981{% endif %}">
+                  background: {% if post.image_tamper_score > 0.65 %}#ef4444{% elif post.image_tamper_score > 0.20 %}#f59e0b{% else %}#10b981{% endif %}">
                 </div>
               </div>
               <div class="score-markers">
@@ -62,7 +62,7 @@
         <h5 class="section-title mb-4"><i class="bi bi-type me-2"></i>Text Detection</h5>
         {% if post.caption %}
           <div class="caption-display mb-3">{{ post.caption }}</div>
-          <div class="detection-result-card {% if post.text_manipulation_score > 0.65 %}result-danger{% elif post.text_manipulation_score > 0.35 %}result-warning{% else %}result-success{% endif %}">
+          <div class="detection-result-card {% if post.text_manipulation_score > 0.65 %}result-danger{% elif post.text_manipulation_score > 0.20 %}result-warning{% else %}result-success{% endif %}">
             <div class="result-metric-row">
               <div>
                 <div class="result-label">Manipulation Confidence</div>
@@ -76,7 +76,7 @@
             <div class="score-bar-wrap mt-3">
               <div class="score-bar">
                 <div class="score-fill" style="width: {{ "%.1f"|format(post.text_manipulation_score * 100) }}%;
-                  background: {% if post.text_manipulation_score > 0.65 %}#ef4444{% elif post.text_manipulation_score > 0.35 %}#f59e0b{% else %}#10b981{% endif %}">
+                  background: {% if post.text_manipulation_score > 0.65 %}#ef4444{% elif post.text_manipulation_score > 0.20 %}#f59e0b{% else %}#10b981{% endif %}">
                 </div>
               </div>
             </div>
@@ -142,13 +142,13 @@
         <div class="summary-row"><span>Analyzed</span><span>{{ post.created_at.strftime('%b %d, %Y %H:%M') }}</span></div>
         <div class="summary-row">
           <span>Image Status</span>
-          <span class="status-pill status-{{ 'danger' if post.image_tamper_score > 0.65 else ('warning' if post.image_tamper_score > 0.35 else 'success') }}">
+          <span class="status-pill status-{{ 'danger' if post.image_tamper_score > 0.65 else ('warning' if post.image_tamper_score > 0.20 else 'success') }}">
             {{ post.image_tamper_label }}
           </span>
         </div>
         <div class="summary-row">
           <span>Text Status</span>
-          <span class="status-pill status-{{ 'danger' if post.text_manipulation_score > 0.65 else ('warning' if post.text_manipulation_score > 0.35 else 'success') }}">
+          <span class="status-pill status-{{ 'danger' if post.text_manipulation_score > 0.65 else ('warning' if post.text_manipulation_score > 0.20 else 'success') }}">
             {{ post.text_manipulation_label }}
           </span>
         </div>
