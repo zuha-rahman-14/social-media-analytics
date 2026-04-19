@@ -172,11 +172,20 @@ def analyze():
         )
         post.compute_engagement()
 
-        if img_score > 0.65 or txt_score > 0.65:
+        post.is_flagged = False
+        if (
+            img_label == "Likely Tampered" or
+            txt_label == "Likely Manipulated" or
+            (img_label == "Suspicious" and txt_label == "Suspicious")
+        ):
             post.is_flagged = True
+            
             reasons = []
-            if img_score > 0.65: reasons.append(f"Image tamper: {img_score:.0%}")
-            if txt_score > 0.65: reasons.append(f"Text manipulation: {txt_score:.0%}")
+            if img_label != "Authentic":
+                reasons.append(f"Image: {img_label} ({img_score:.0%})")
+            if txt_label != "Authentic":
+                reasons.append(f"Text: {txt_label} ({txt_score:.0%})")
+                
             post.flag_reason = ' | '.join(reasons)
 
         db.session.add(post); db.session.commit()
