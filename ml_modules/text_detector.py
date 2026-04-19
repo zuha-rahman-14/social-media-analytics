@@ -108,8 +108,7 @@ class TextManipulationDetector:
             if bert_detail:
                 details.append(bert_detail)
         else:
-            final = 0.55 * rule_score + 0.45 * ling_score
-
+            final = min(1.0, (0.55 * rule_score + 0.45 * ling_score) * 1.8)
         final = float(np.clip(final, 0.0, 1.0))
         return round(final, 4), self._to_label(final), details
 
@@ -117,6 +116,15 @@ class TextManipulationDetector:
     def _rule_checks(self, text: str) -> Tuple[float, List[Dict]]:
         findings, score = [], 0.0
         lower = text.lower()
+        AI_PATTERNS = [
+            r"\bai generated\b",
+            r"\bai created\b",
+            r"\bdeepfake\b",
+            r"\bunseen pics\b",
+            r"\bleaked\b",
+            r"\bviral\b",
+            r"\bexclusive\b"
+        ]
 
         for pat in CLICKBAIT:
             m = re.search(pat, lower)
@@ -131,6 +139,12 @@ class TextManipulationDetector:
                 findings.append({'rule': 'Spam / Promotional Pattern', 'severity': 'high',
                                   'excerpt': self._excerpt(text, m.start())})
                 score += 0.18
+
+        for pat in AI_PATTERNS:
+            if re.search(pat, lower):
+                findings.append({'rule': 'AI / Synthetic Content Pattern','severity': 'medium',
+                                 'excerpt': self._excerpt(text, 0)})
+                score += 0.15        
 
         for pat in HATE:
             m = re.search(pat, lower)
